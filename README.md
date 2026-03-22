@@ -13,3 +13,22 @@ si cate o functie membru publica pentru functionalitate netriviala, dintre care 
 
 In main am declarat obiecte specifice pentru clasele din proiect,
 afisand obiectul in formatul specificat in clasa sa prin functia friend cu operatorul de afisare <<.
+
+
+1. Descrierea datelor de intrare:
+Datele de intrare sunt reprezentate de seturi de date:
+
+- Companie: primeste numele companiei (char*) si anul infiintarii (int).
+- Ruta: primeste orasul de plecare (char*), destinatia (char*) si distanta in km (float).
+- Rezervare: primeste numele clientului (char*), numarul de bilete (int) si un vector 
+  alocat dinamic cu preturile fiecarui bilet in parte (float*).
+
+  
+2. Descrierea operatiilor posibile:
+Pe langa operatiile standard, sistemul permite urmatoarele operatii specifice domeniului (functionalitati netriviale):
+
+- Calcularea numarului de ani de existenta a unei companii aeriene in raport cu un an dat;
+- Estimarea duratei de zbor pentru o anumita ruta;
+- Calcularea costului unei rezervari (suma tuturor biletelor);
+- Aplicarea automata a unei promotii ("reducere_grup"): daca o rezervare contine 3 
+  sau mai multe bilete, cel mai ieftin bilet primeste o reducere de 50%.
