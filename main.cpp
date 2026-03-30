@@ -58,6 +58,21 @@ public:
         std::cout << "Am copiat compania " << this->nume << "\n";
     }
 
+    //setteri:
+    void setNume(const char* nouNume)
+    {
+        if (this->nume != nullptr) {
+            delete[] this->nume;
+        }
+        this->nume = new char[strlen(nouNume) + 1];
+        strcpy(this->nume, nouNume);
+    }
+
+    inline void setAnInfiintare(int nouAn)
+    {
+        this->an_infiintare = nouAn;
+    }
+
     ~Companie() //Destructor
     {
         std::cout << "Destructor pentru " << this->nume <<"\n";
@@ -76,7 +91,17 @@ public:
         return *this;
     }
 
-    int existenta(int an_curent) const //functie membru publica pentru functionalitate netriviala
+    //getteri:
+    inline const char* getNume() const
+    {
+        return this->nume;
+    }
+    inline int getAnInfiintare() const
+    {
+        return this->an_infiintare;
+    }
+
+    inline int existenta(int an_curent) const //functie membru publica pentru functionalitate netriviala
     {
         if (an_curent < this->an_infiintare)
             return 0;
@@ -127,6 +152,30 @@ public:
         std::cout << "Ruta copiata: plecare din " << this->plecare << " cu sosire in " << this->destinatie <<"\n";
     }
 
+    //setteri:
+    void setPlecare(const char* nouaPlecare)
+    {
+        if (this->plecare != nullptr) {
+            delete[] this->plecare;
+        }
+        this->plecare = new char[strlen(nouaPlecare) + 1];
+        strcpy(this->plecare, nouaPlecare);
+    }
+
+    void setDestinatie(const char* nouaDestinatie)
+    {
+        if (this->destinatie != nullptr) {
+            delete[] this->destinatie;
+        }
+        this->destinatie = new char[strlen(nouaDestinatie) + 1];
+        strcpy(this->destinatie, nouaDestinatie);
+    }
+
+    inline void setDistanta(float nouaDistanta)
+    {
+        this->distanta = nouaDistanta;
+    }
+
     ~Ruta() //Destructor
     {
         std::cout << "Destructor pentru ruta cu plecare din " << this->plecare << " si sosire in "  << this->destinatie <<"\n";
@@ -152,6 +201,20 @@ public:
         return* this;
     }
 
+    //getteri
+    inline const char* getPlecare() const
+    {
+        return this->plecare;
+    }
+    inline const char* getDestinatie() const
+    {
+        return this->destinatie;
+    }
+    inline float getDistanta() const
+    {
+        return this->distanta;
+    }
+
     float durata(float viteza) const //functie membru publica pentru functionalitate netriviala
     {
         return this->distanta/viteza;
@@ -174,8 +237,16 @@ private:
     int nr_bilete;
     float* preturi;
 
+    Companie companie;
+    Ruta ruta;
+
+    static int nr_total_rezervari;
+
 public:
-    Rezervare(const char* client = "", int nr_bilete = 0, const float* preturi = nullptr) //Constructor de initializare
+
+    //constructor de initializare
+    Rezervare(const char* client = "", int nr_bilete = 0, const float* preturi = nullptr, const Companie& comp = Companie(), const Ruta& rut = Ruta())
+              : companie(comp), ruta(rut)
     {
         this->client = new char[strlen(client) + 1];
         strcpy(this->client, client);
@@ -189,12 +260,15 @@ public:
                 this->preturi[i] = preturi[i];
         }
         else
+        {
             this->preturi = nullptr;
+        }
 
         std::cout << "Rezervare pentru: " << this->client <<"\n";
+        nr_total_rezervari++;
     }
 
-    Rezervare(const Rezervare& r) //Constructor de copiere
+    Rezervare(const Rezervare& r) : companie(r.companie), ruta(r.ruta)
     {
         this->client = new char[strlen(r.client) + 1];
         strcpy(this->client, r.client);
@@ -207,9 +281,59 @@ public:
                 this->preturi[i] = r.preturi[i];
         }
         else
+        {
             this->preturi = nullptr;
+            this->nr_bilete = 0;
+        }
 
         std::cout << "Rezervare copiata pentru: " << this->client <<"\n";
+        nr_total_rezervari++;
+    }
+
+    //setteri
+    void setClient(const char* nouClient)
+    {
+        if (this->client != nullptr) {
+            delete[] this->client;
+        }
+        this->client = new char[strlen(nouClient) + 1];
+        strcpy(this->client, nouClient);
+    }
+
+    //setam biletele si preturile impreuna pentru a evita desincronizarea
+    void setBilete(int nouNrBilete, const float* noiPreturi)
+    {
+        //stergem preturile vechi
+        if (this->preturi != nullptr) {
+            delete[] this->preturi;
+        }
+
+        //actualizam numarul
+        this->nr_bilete = nouNrBilete;
+
+        //alocam din nou daca e cazul
+        if (this->nr_bilete > 0 && noiPreturi != nullptr)
+        {
+            this->preturi = new float[this->nr_bilete];
+            for (int i = 0; i < this->nr_bilete; i++)
+                this->preturi[i] = noiPreturi[i];
+        }
+        else
+        {
+            this->preturi = nullptr;
+            this->nr_bilete = 0;
+        }
+    }
+
+    //setterii pentru clasele compuse
+    inline void setCompanie(const Companie& nouaCompanie)
+    {
+        this->companie = nouaCompanie;
+    }
+
+    inline void setRuta(const Ruta& nouaRuta)
+    {
+        this->ruta = nouaRuta;
     }
 
     ~Rezervare() //Destructor
@@ -217,9 +341,10 @@ public:
         std::cout << "Destructor pentru " << this->client <<"\n";
         delete[] this->client;
         delete[] this->preturi;
+        nr_total_rezervari--;
     }
 
-    Rezervare& operator=(const Rezervare& r) //operator= de copiere
+    Rezervare& operator=(const Rezervare& r) //operator=
     {
         if (this != &r)
         {
@@ -237,9 +362,42 @@ public:
                     this->preturi[i] = r.preturi[i];
             }
             else
+            {
                 this->preturi = nullptr;
+                this->nr_bilete = 0;
+            }
+
+            //copierea obiectelor compuse
+            this->companie = r.companie;
+            this->ruta = r.ruta;
         }
         return *this;
+    }
+
+    inline const char* getClient() const
+    {
+        return this->client;
+    }
+    inline int getNrBilete() const
+    {
+        return this->nr_bilete;
+    }
+    inline const float* getPreturi() const
+    {
+        return this->preturi;
+    }
+    static int getNrTotalRezervari()
+    {
+        return nr_total_rezervari;
+    }
+
+    Companie getCompanie() const
+    {
+        return this->companie;
+    }
+    Ruta getRuta() const
+    {
+        return this->ruta;
     }
 
     float cost_total() const //functie membru publica pentru functionalitate netriviala
@@ -266,9 +424,13 @@ public:
         return false;
     }
 
-    friend std::ostream& operator << (std::ostream& out, const Rezervare& r) //operator << pentru afisare
+    friend std::ostream& operator << (std::ostream& out, const Rezervare& r)
     {
-        out << "Clientul " << r.client << " are " << r.nr_bilete << " bilete";
+        //afisam compania si ruta folosind getterii si operatorii << deja definiti in celelalte clase
+        out << "Clientul " << r.client << " zboara cu compania " << r.companie.getNume() << "\n";
+        out << r.ruta; //aici se apeleaza automat operatorul << din clasa Ruta
+        out << "Are " << r.nr_bilete << " bilete";
+
         if (r.nr_bilete > 0 && r.preturi != nullptr)
         {
             out << " cu preturile ";
@@ -284,42 +446,50 @@ public:
     }
 };
 
+int Rezervare::nr_total_rezervari = 0;
+
+
 
 
 int main()
 {
+    Companie c1("Turkish Airlines", 1954);
+    Companie c2("KLM", 1953);
 
-    //COMPANIE
-    Companie c1("British Airways", 1936);
-    Companie c2 = c1; //copiere
-    c2 = Companie("Emirates", 1985); //atribuire
+    Ruta r1("Istanbul", "Paris", 2270.5);
+    Ruta r2("Amsterdam", "Boston", 4000.0);
 
-    std::cout << c1 << "\n";
-    std::cout << c2 << "\n";
-    std::cout << "British Airways are o vechime de " << c1.existenta(2026) << " ani\n\n\n";
-
-
-
-    //RUTA
-    Ruta r1("Bucuresti", "Londra", 2090.5);
-    Ruta r2; //ruta goala initial
-    r2 = r1; //atribuire
-
-    std::cout << r1;
-    std::cout << "Durata estimata a zborului (la 800 km/h): " << r1.durata(800.0) << " ore\n\n\n";
-
-
-    //REZERVARE
-    float preturiTest[3] = {1200.50, 1200.50, 600.00};
-    Rezervare rez1("Ioan Popa", 3, preturiTest);
-
-    if (rez1.reducere_grup() == true)
-        std::cout << "S-a aplicat reducerea de grup (50% la cel mai ieftin bilet)\n";
-    else
-        std::cout << "Clientul nu beneficiaza de reducere (necesita minim 3 bilete)\n";
+    float preturiGrup[4] = {1000.0, 1200.0, 1000.0, 800.0};
+    Rezervare rez1("Familia Popescu", 4, preturiGrup, c1, r1);
 
     std::cout << rez1;
-    std::cout << "Cost final: " << rez1.cost_total() << " RON\n\n\n";
+    std::cout << "Cost initial: " << rez1.cost_total() << " RON\n";
 
+    if (rez1.reducere_grup()) {
+        std::cout << "-> S-a aplicat reducerea de grup!\n";
+        std::cout << "Cost dupa reducere: " << rez1.cost_total() << " RON\n";
+    }
+
+    std::cout << "--- Se apeleaza constructorul de copiere ---\n";
+    Rezervare rez2 = rez1;
+
+    rez2.setClient("Familia Ionescu");
+    rez2.setCompanie(c2);
+    rez2.setRuta(r2);
+
+    std::cout << "\nDetalii Rezervare 2 (dupa modificari independente):\n";
+    std::cout << rez2;
+
+    Rezervare rez3;
+
+    std::cout << "\n--- Se apeleaza operatorul = ---\n";
+    rez3 = rez2; // Copiem rezervarea Ionescu in rez3
+
+    float preturiSingle[1] = {2500.0};
+    rez3.setClient("Client Business");
+    rez3.setBilete(1, preturiSingle);
+
+    std::cout << "\nDetalii Rezervare 3:\n";
+    std::cout << rez3;
     return 0;
 }
